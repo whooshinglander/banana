@@ -41,43 +41,7 @@ tracker = StockTracker()
 # Route to serve the HTML form
 @app.route('/')
 def index():
-    return '''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Investment Tracker Form</title>
-    </head>
-    <body>
-        <h2>Enter Transaction Details</h2>
-        <form id="transactionForm" method="post" action="/submit">
-            <label for="date">Date:</label>
-            <input type="date" id="date" name="date" required><br><br>
-
-            <label for="ticker">Ticker Symbol:</label>
-            <input type="text" id="ticker" name="ticker" required><br><br>
-
-            <label for="quantity">Quantity:</label>
-            <input type="number" id="quantity" name="quantity" required><br><br>
-
-            <label for="price">Price per Share:</label>
-            <input type="number" step="0.01" id="price" name="price" required><br><br>
-            
-            <label for="notes">Notes:</label>
-            <input type="text" id="notes" name="notes" required><br><br>
-
-            <label for="transactionType">Transaction Type:</label>
-            <select id="transactionType" name="transactionType" required>
-                <option value="buy">Buy</option>
-                <option value="sell">Sell</option>
-            </select><br><br>
-
-            <button type="submit">Submit</button>
-        </form>
-    </body>
-    </html>
-    '''
+    return render_template('transaction_form.html')
 
 # Route to handle form submission
 @app.route('/submit', methods=['POST'])
@@ -88,7 +52,8 @@ def submit():
         "ticker": request.form['ticker'],
         "quantity": int(request.form['quantity']),
         "price": float(request.form['price']),
-        "transactionType": request.form['transactionType']
+        "transactionType": request.form['transactionType'],
+        "notes": request.form.get('notes', '')  # Capture notes field, default to empty if not provided
     }
     # Add transaction to JSON file
     tracker.add_transaction(transaction)
