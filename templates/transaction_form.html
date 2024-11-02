@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Transaction Form</title>
+    <script>
+        // Set the max attribute of the date input to today's date
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').setAttribute('max', today);
+        };
+    </script>
+</head>
+<body>
+    <h1>Add Stock Transaction</h1>
+    <form id="transactionForm" action="/submit" method="POST">
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required><br>
+        
+        <label for="ticker">Ticker:</label>
+        <input type="text" id="ticker" name="ticker" required><br>
+        
+        <label for="transactionType">Transaction Type:</label>
+        <select id="transactionType" name="transactionType" required onchange="updateQuantity()">
+            <option value="buy">Buy</option>
+            <option value="sell">Sell</option>
+        </select><br>
+
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" name="quantity" required min="0"><br>
+        
+        <label for="price">Price:</label>
+        <input type="number" id="price" name="price" required step="0.01"><br>
+        
+        <label for="currency">Currency:</label>
+        <select id="currency" name="currency" required>
+            <option value="USD">US Dollar (USD)</option>
+            <option value="EUR">Euro (EUR)</option>
+            <option value="JPY">Japanese Yen (JPY)</option>
+            <option value="GBP">British Pound (GBP)</option>
+            <option value="AUD">Australian Dollar (AUD)</option>
+            <option value="CAD">Canadian Dollar (CAD)</option>
+            <option value="CHF">Swiss Franc (CHF)</option>
+            <option value="CNY">Chinese Yuan (CNY)</option>
+            <option value="HKD">Hong Kong Dollar (HKD)</option>
+            <option value="NZD">New Zealand Dollar (NZD)</option>
+            <option value="SGD">Singapore Dollar (SGD)</option>
+            <option value="SEK">Swedish Krona (SEK)</option>
+            <option value="NOK">Norwegian Krone (NOK)</option>
+        </select><br>
+        
+        <label for="commission">Commission:</label>
+        <input type="number" id="commission" name="commission" required step="0.01" value="0"><br>
+
+        <label for="notes">Notes:</label>
+        <textarea id="notes" name="notes"></textarea><br>
+
+        <input type="submit" value="Submit">
+    </form>
+
+    <script>
+        function updateQuantity() {
+            const transactionType = document.getElementById('transactionType').value;
+            const quantityInput = document.getElementById('quantity');
+
+            // If the transaction type is 'sell', set the quantity to negative
+            if (transactionType === 'sell') {
+                quantityInput.value = quantityInput.value ? -Math.abs(quantityInput.value) : '';
+            } else {
+                quantityInput.value = Math.abs(quantityInput.value);
+            }
+        }
+    </script>
+</body>
+</html>

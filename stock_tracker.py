@@ -2,47 +2,46 @@ from flask import Flask, render_template, request, jsonify
 import json
 import os
 import pathlib
+import time
 
 app = Flask(__name__)
-
-{
-  "version": "0.2.0",
-  "configurations": [
-    {
-      "preLaunchTask": "npm: start",
-    },
-  ]
-}
 
 class StockTracker:
     def __init__(self, data_dir="data"):
         self.data_dir = data_dir
-        self.transactions_file = os.path.join(data_dir, "transactions.json")
         self._ensure_data_files_exist()
 
     def _ensure_data_files_exist(self):
         pathlib.Path(self.data_dir).mkdir(parents=True, exist_ok=True)
-        if not os.path.exists(self.transactions_file):
-            self._save_transactions([])
 
-    def _load_transactions(self):
+    def _load_transactions(self, file_path):
         try:
-            with open(self.transactions_file, 'r') as f:
+            with open(file_path, 'r') as f:
                 return json.load(f)
-        except json.JSONDecodeError:
+        except (json.JSONDecodeError, FileNotFoundError):
             return []
 
-    def _save_transactions(self, transactions):
-        with open(self.transactions_file, 'w') as f:
-            json.dump(transactions, f, indent=4)
+    def _save_transactions(self, file_path, transaction):
+        with open(file_path, 'w') as f:
+            json.dump(transaction, f, indent=4)
 
     def add_transaction(self, transaction):
-        transactions = self._load_transactions()
-        transactions.append(transaction)
-        self._save_transactions(transactions)
+        # Generate a unique filename based on the current timestamp
+        timestamp = int(time.time())
+        file_name = f"transaction_{timestamp}.json"
+        file_path = os.path.join(self.data_dir, file_name)
+
+        # Save the transaction to a new JSON file
+        self._save_transactions(file_path, transaction)
 
     def get_transactions(self):
-        return self._load_transactions()
+        # List all transaction files in the data directory
+        transactions = []
+        for file_name in os.listdir(self.data_dir):
+            if file_name.startswith("transaction_") and file_name.endswith(".json"):
+                file_path = os.path.join(self.data_dir, file_name)
+                transactions.append(self._load_transactions(file_path))
+        return transactions
 
 # Initialize StockTracker instance
 tracker = StockTracker()
@@ -56,23 +55,38 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     # Get form data
+    transaction_type = request.form['transactionType']
+    quantity = int(request.form['quantity'])
+
+    # If the transaction type is 'sell', make the quantity negative
+    if transaction_type == 'sell':
+        quantity = -abs(quantity)
+
     transaction = {
         "date": request.form['date'],
         "ticker": request.form['ticker'],
-        "quantity": int(request.form['quantity']),
+        "quantity": quantity,
         "price": float(request.form['price']),
-        "transactionType": request.form['transactionType'],
+        "transactionType": transaction_type,
+        "currency": request.form['currency'],
+        "commission": float(request.form['commission']),
         "notes": request.form.get('notes', '')  # Capture notes field, default to empty if not provided
     }
-    # Add transaction to JSON file
+    
+    # Add transaction to a new JSON file
     tracker.add_transaction(transaction)
-    return "Transaction added successfully!"
+    return jsonify({"message": "Transaction added successfully!"}), 201
 
 # Route to display stored transactions
 @app.route('/transactions', methods=['GET'])
 def get_transactions():
     transactions = tracker.get_transactions()
-    return jsonify(transactions)
+    return jsonify(transactions), 200
+
+# Route to serve the calendar view
+@app.route('/calendar', methods=['GET'])
+def calendar():
+    return render_template('calendar.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
