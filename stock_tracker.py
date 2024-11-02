@@ -5,6 +5,15 @@ import pathlib
 
 app = Flask(__name__)
 
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "preLaunchTask": "npm: start",
+    },
+  ]
+}
+
 class StockTracker:
     def __init__(self, data_dir="data"):
         self.data_dir = data_dir
