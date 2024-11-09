@@ -1,0 +1,17 @@
+Elephant/
+├── data/
+│   ├── daily_prices.json          # Stores daily prices for each stock for the last year
+│   ├── last_price.json            # Stores the last price fetched for each stock (if any)
+│   └── transaction files (.json)  # Individual transaction files for each transaction
+├── src/
+│   └── transaction.html           # HTML template for transaction form, holdings table, and portfolio value chart
+├── dashboard.py                   # Main Flask application with endpoints for transactions, portfolio values, and daily price updates
+└── README.md                      # Project documentation
+
+
+python -m venv venv
+venv\Scripts\activate
+pip install requests
+pip install flask
+pip install beautifulsoup4 requests
+pip install yfinance
